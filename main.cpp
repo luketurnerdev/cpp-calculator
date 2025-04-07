@@ -136,7 +136,7 @@ string getOperationFromUser() {
     }
 }
 
-int performOperation(const int numberOne, const int numberTwo, const string& chosenOperator) {
+optional<int> performOperation(const int numberOne, const int numberTwo, const string& chosenOperator) {
     switch (chosenOperator[0]) {
         case '+':
             return numberOne + numberTwo;
@@ -145,10 +145,11 @@ int performOperation(const int numberOne, const int numberTwo, const string& cho
         case '*':
             return numberOne * numberTwo;
         case '/':
+            if (numberTwo == 0) return nullopt;
             return numberOne / numberTwo;
         default:
             cerr << "Error: Unexpected operator '" << chosenOperator[0] << "'\n";
-            exit(1);
+            return nullopt;
     }
 }
 
@@ -157,8 +158,15 @@ void calculatorLoop() {
         const int firstValidatedOperand = getNumberFromUser("Enter your first number: ");
         const string validOperation = getOperationFromUser();
         const int secondValidatedOperand = getNumberFromUser("Enter your second number: ");
-        const int result = performOperation(firstValidatedOperand, secondValidatedOperand, validOperation);
-        cout << "The result of " << firstValidatedOperand << " " << validOperation << " " << secondValidatedOperand << " is " << result << ".\n";
+        const auto validResult = performOperation(firstValidatedOperand, secondValidatedOperand, validOperation);
+
+        if (validResult) {
+            const int actualValue = validResult.value();
+            cout << "The result of " << firstValidatedOperand << " " << validOperation << " " << secondValidatedOperand << " is " << actualValue << ".\n";
+        } else {
+            cout << "Invalid operation (e.g., division by zero).\n\n";
+            continue;
+        }
 
         // See if user wants to play again
         while (true) {
